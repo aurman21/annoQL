@@ -11,8 +11,7 @@ It's easy to customize and saves the results locally in a csv file by default.
 2. Create a virtual environment & install dependencies (you need to have python installed):
 
 python -m venv .venv
-source .venv/bin/activate    # Mac/Linux
-# .\.venv\Scripts\Activate.ps1   # Windows PowerShell
+source .venv/bin/activate    # Mac/Linux or for Windows  .\.venv\Scripts\Activate.ps1 
 pip install -r requirements.txt
 
 3. To run the app (in terminal):
