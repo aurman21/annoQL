@@ -1,0 +1,4 @@
+item_id,source,description
+001,"The quick brown fox jumps over the lazy dog.","Some description"
+002,"Another example.",""
+103,"For images/videos/audios (or txt files) replace this with the path to file in each case!",""

@@ -1,0 +1,5 @@
+coder_id,display_name,group,item_ids,notes
+adaHJF,Ada,experts,"001;002;010","Assigned three bundles"
+hf67uo,Student1,students,"003,004","Comma also works"
+andy02,Andy,external,,"No fixed assignment (can annotate any)"
+

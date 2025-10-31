@@ -1,0 +1,37 @@
+project_name: "Example Study"
+
+# One media type per project: image | text | video | audio
+media_type: "text"
+
+# Data/config files
+items_file: "items.csv"          # must have columns: item_id, source  (description optional)
+questions_file: "questions.json" # your survey spec (now includes inline help popups)
+
+# How many items to show per page, whether to shuffle them and allow repetitions
+batch_size: 5
+shuffle_items: true
+allow_repeat: false
+
+# CSV output (that's where your annotations will be saved!)
+output_csv: "ratings.csv"
+
+# Skip behavior (whether you allow the annotators to skip items)
+allow_skip: true
+
+# Optional page-top instructions (HTML allowed)
+page_header_html: "<p><b>Instructions:</b> Please annotate carefully. Use the question mark icons for guidance.</p>"
+
+# Optional top description block (set enabled to false if you don't need it)
+page_description:
+  enabled: true                 # set to false to hide the block
+  column: "description"         # which column from items.csv to read; "" to disable lookup
+  template_html: "<h3>This was described like that: {{value}}</h3>"
+
+# Coder tracking (free entry if each coder enters their id; otherwise see example coders.csv)
+coder_mode: "free_entry"        # "pseudonym" | "free_entry"
+coders_file: "coders.csv"       # used only if coder_mode == "pseudonym"
+
+# OPTIONAL: Per-coder item assignments
+# If provided, must have columns: coder_id,item_ids  (item_ids is comma- or semicolon-separated)
+assignments_file: ""               # e.g., "assignments.csv" (leave empty to ignore)
+

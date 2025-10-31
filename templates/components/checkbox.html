@@ -1,0 +1,11 @@
+<div class="q-block">
+  <p>{{ q.prompt }}{% if q.help_popup %} <span class="question-mark" data-popup-id="{{ q.help_popup }}">?</span>{% endif %}</p>
+  <div style="display:flex;flex-direction:column;gap:6px">
+    {% for val, label in q.options.items() %}
+      <label>
+        <input type="checkbox" name="{{ q.id }}{% if q.applies_to=='item' %}_{{ loop.parent.loop.index0 }}{% endif %}" value="{{ val }}"> {{ label }}
+      </label>
+    {% endfor %}
+  </div>
+</div>
+

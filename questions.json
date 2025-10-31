@@ -1,0 +1,28 @@
+[
+  {
+    "id": "relevance",
+    "type": "radio",
+    "applies_to": "item",
+    "prompt": "Does this item correspond to the task?",
+    "options": { "1": "Yes", "0": "No" },
+    "required": true,
+    "help": {
+      "title": "What does “correspond” mean?",
+      "html": "<p><b>Answer YES</b> if the item represents a reasonable interpretation of the task, even if imperfect. <br><b>Answer NO</b> if the core subject is missing.</p>"
+    }
+  },
+  {
+    "id": "diversity",
+    "type": "scale",
+    "applies_to": "page",
+    "prompt": "How diverse are the items in this batch?",
+    "min": 1,
+    "max": 5,
+    "required": true,
+    "help": {
+      "title": "Rating diversity",
+      "html": "<ul><li><b>1</b>: almost identical</li><li><b>3</b>: some variety</li><li><b>5</b>: very different</li></ul>"
+    }
+  }
+]
+

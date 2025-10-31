@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{{ project_name or "Annotation" }}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --accent:#007bff; --ink:#222; --bg:#fafafa; }
+  body { font-family: Arial, sans-serif; margin: 16px auto; max-width: 980px; color: var(--ink); }
+  h1 { font-size: 22px; margin-bottom: 8px; }
+  h2 { font-size: 18px; margin-top: 28px; }
+  .item-block { margin: 18px 0 28px; }
+  img, video { max-width: 100%; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+  .text-item { white-space: pre-wrap; padding: 12px; background: var(--bg); border: 1px solid #eee; border-radius: 8px; }
+  .q-block p { margin: 10px 0 8px; font-weight: 600; }
+  .question-mark { display:inline-flex; align-items:center; justify-content:center; width:20px; height:20px; background:var(--accent); color:#fff; border-radius:50%; margin-left:6px; cursor:pointer; font-weight:bold; font-size:13px; }
+  .sep { height:2px; background:#000; margin:16px 0; opacity:.2; }
+  textarea { width:100%; max-width:740px; height:120px; }
+  button { padding:10px 16px; cursor:pointer; border:0; border-radius:8px; background: var(--accent); color:#fff; }
+  .page-header, .page-desc { margin: 8px 0 16px; }
+
+  /* Modal */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; z-index:9999; }
+  .modal { background:#fff; max-width:700px; width:92%; border-radius:10px; box-shadow:0 6px 24px rgba(0,0,0,.25); max-height:80vh; overflow:auto; }
+  .modal header { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid #eee; }
+  .modal header h3 { margin:0; font-size:18px; }
+  .modal .close { border:0; background:#dc3545; color:#fff; border-radius:6px; padding:6px 10px; cursor:pointer; }
+  .modal .content { padding:16px; line-height:1.45; }
+  .inline-options { display:flex; gap:10px; flex-wrap:wrap; }
+  .stacked-options { display:flex; flex-direction:column; gap:6px; }
+  .scale-options { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  .scale-options label { display:flex; flex-direction:column; align-items:center; gap:4px; }
+  .skip-row { margin: 6px 0 2px; }
+</style>
+</head>
+<body>
+
+<h1>{{ project_name or "Annotation" }}</h1>
+
+{% if page_header_html %}
+  <div class="page-header">{{ page_header_html|safe }}</div>
+{% endif %}
+
+{% if page_desc_html %}
+  <div class="page-desc">{{ page_desc_html|safe }}</div>
+{% endif %}
+
+{# ---------- Jinja "macros" (inline components) ---------- #}
+{% macro help_icon(qid) -%}
+  <span class="question-mark" data-modal-id="help-{{ qid }}">?</span>
+{%- endmacro %}
+
+{% macro render_radio(q, idx=None) -%}
+  <div class="q-block">
+    <p>
+      {{ q.prompt }}
+      {% if q.help %}{{ help_icon(q.id) }}{% endif %}
+    </p>
+    <div class="inline-options">
+      {% for val,label in q.options.items() %}
+        <label style="display:flex;align-items:center;gap:6px">
+          <input type="radio" name="{{ q.id }}{% if idx is not none %}_{{ idx }}{% endif %}" value="{{ val }}"> {{ label }}
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro render_checkbox(q, idx=None) -%}
+  <div class="q-block">
+    <p>
+      {{ q.prompt }}
+      {% if q.help %}{{ help_icon(q.id) }}{% endif %}
+    </p>
+    <div class="stacked-options">
+      {% for val,label in q.options.items() %}
+        <label>
+          <input type="checkbox" name="{{ q.id }}{% if idx is not none %}_{{ idx }}{% endif %}" value="{{ val }}"> {{ label }}
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro render_scale(q, idx=None) -%}
+  <div class="q-block">
+    <p>
+      {{ q.prompt }}
+      {% if q.help %}{{ help_icon(q.id) }}{% endif %}
+    </p>
+    <div class="scale-options">
+      {% for v in range(q.min, q.max + 1) %}
+        <label>
+          <span>{{ v }}</span>
+          <input type="radio" name="{{ q.id }}{% if idx is not none %}_{{ idx }}{% endif %}" value="{{ v }}">
+        </label>
+      {% endfor %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ---------- Items + item-level questions ---------- #}
+<div id="item-container">
+  {% for item in items %}
+    {% set idx = loop.index0 %}
+    <div class="item-block">
+      {% if media_type == "image" %}
+        <img src="{{ item.source }}" alt="Item">
+      {% elif media_type == "text" %}
+        <div class="text-item">{{ item.display_text }}</div>
+      {% elif media_type == "video" %}
+        <video controls src="{{ item.source }}"></video>
+      {% elif media_type == "audio" %}
+        <audio controls src="{{ item.source }}"></audio>
+      {% endif %}
+
+      {% for q in questions if q.applies_to == 'item' %}
+        {% if q.type == 'radio' %} {{ render_radio(q, idx) }}
+        {% elif q.type == 'checkbox' %} {{ render_checkbox(q, idx) }}
+        {% elif q.type == 'scale' %} {{ render_scale(q, idx) }}
+        {% endif %}
+        {% if allow_skip %}
+          <div class="skip-row">
+            <label><input type="checkbox" name="{{ q.id }}_skip_{{ idx }}"> Cannot judge this</label>
+          </div>
+        {% endif %}
+        <div class="sep"></div>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+
+{# ---------- Page-level questions ---------- #}
+<h2>Questions about ALL ITEMS on this page</h2>
+{% for q in questions if q.applies_to == 'page' %}
+  {% if q.type == 'radio' %} {{ render_radio(q) }}
+  {% elif q.type == 'checkbox' %} {{ render_checkbox(q) }}
+  {% elif q.type == 'scale' %} {{ render_scale(q) }}
+  {% endif %}
+{% endfor %}
+
+<p><textarea id="comments" placeholder="Optional comments..."></textarea></p>
+<p><button onclick="submitRating()">Submit</button></p>
+
+{# ---------- Auto-generated HELP MODALS from questions.json ---------- #}
+{% for q in questions if q.help %}
+  <div class="modal-overlay" id="help-{{ q.id }}">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="help-title-{{ q.id }}">
+      <header>
+        <h3 id="help-title-{{ q.id }}">{{ q.help.title if q.help.title else 'Help' }}</h3>
+        <button class="close" data-close="help-{{ q.id }}">Close</button>
+      </header>
+      <div class="content">
+        {{ (q.help.html if q.help.html else q.help.text)|safe }}
+      </div>
+    </div>
+  </div>
+{% endfor %}
+
+<script>
+  const QUESTIONS = {{ questions | tojson }};
+  const ITEMS = {{ items | tojson }};
+  const ALLOW_SKIP = {{ allow_skip | tojson }};
+
+  // Modal handlers
+  document.addEventListener('click', (e) => {
+    // Open
+    const opener = e.target.closest('[data-modal-id]');
+    if (opener) {
+      const id = opener.getAttribute('data-modal-id');
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'flex';
+      return;
+    }
+    // Close
+    const closer = e.target.closest('[data-close]');
+    if (closer) {
+      const id = closer.getAttribute('data-close');
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+      return;
+    }
+    // Click overlay to close
+    if (e.target.classList.contains('modal-overlay')) {
+      e.target.style.display = 'none';
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    }
+  });
+
+  // Helpers for collecting answers
+  function getCheckedValues(name) {
+    return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(x => x.value);
+  }
+  function getRadioValue(name) {
+    const el = document.querySelector(`input[name="${name}"]:checked`);
+    return el ? el.value : null;
+  }
+
+  function submitRating() {
+    const itemsPayload = [];
+
+    ITEMS.forEach((item, idx) => {
+      const ans = {};
+      let ok = true;
+
+      QUESTIONS.filter(q => q.applies_to === 'item').forEach(q => {
+        const skipBox = document.querySelector(`input[name="${q.id}_skip_${idx}"]`);
+        const skipped = skipBox && skipBox.checked;
+
+        if (q.type === 'checkbox') ans[q.id] = getCheckedValues(`${q.id}_${idx}`);
+        if (q.type === 'radio' || q.type === 'scale') ans[q.id] = getRadioValue(`${q.id}_${idx}`);
+
+        if (!skipped && q.required) {
+          const empty = ans[q.id] == null || (Array.isArray(ans[q.id]) && ans[q.id].length === 0);
+          if (empty) { alert(`Please answer required question "${q.id}" for item ${idx+1}.`); ok = false; }
+        } else if (skipped) {
+          ans[q.id] = "__SKIPPED__";
+        }
+      });
+
+      if (!ok) { throw new Error("Validation failed"); }
+      itemsPayload.push({ item_row: item, answers: ans });
+    });
+
+    // Page-level answers
+    const pageAnswers = {};
+    let okp = true;
+    QUESTIONS.filter(q => q.applies_to === 'page').forEach(q => {
+      if (q.type === 'checkbox') pageAnswers[q.id] = getCheckedValues(`${q.id}`);
+      if (q.type === 'radio' || q.type === 'scale') pageAnswers[q.id] = getRadioValue(`${q.id}`);
+      if (q.required) {
+        const empty = pageAnswers[q.id] == null || (Array.isArray(pageAnswers[q.id]) && pageAnswers[q.id].length === 0);
+        if (empty) { alert(`Please answer required page question "${q.id}".`); okp = false; }
+      }
+    });
+    if (!okp) return;
+
+    const comments = (document.getElementById("comments")?.value || "").trim();
+
+    fetch(`/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: itemsPayload, page_answers: pageAnswers, comments })
+    })
+    .then(r => r.json())
+    .then(resp => {
+      if (resp.status === "success") {
+        window.scrollTo(0, 0);
+        location.reload();
+      } else {
+        alert("Error: " + (resp.message || "Unknown error"));
+      }
+    })
+    .catch(err => { if (err.message !== "Validation failed") alert("Unexpected error."); });
+  }
+</script>
+</body>
+</html>
+
+
+
