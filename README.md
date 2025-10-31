@@ -27,3 +27,10 @@ questions.json — annotation questions (supports help popups).
 coders.csv — optional: control which coder works on which items.
 
 config.yaml — batch size, output filename, display settings.
+
+## To deploy externally (suggested solution)
+
+I suggest using Cloudflare tunnel functionality to deploy the app externally (this was tried and tested by our team on a project that involved annotating a lot of images using this annotation set up).
+A general tutorial is e.g. the one linked below, later on I will try to summarize the instructions more easily directly here. 
+
+https://medium.com/design-bootcamp/how-to-setup-a-cloudflare-tunnel-and-expose-your-local-service-or-application-497f9cead2d3
