@@ -19,7 +19,7 @@ export FLASK_APP=app.py       # Windows: set FLASK_APP=app.py
 flask run --port 5001         #change the port as you need to
 
 
-**Files you will likely need to edit**
+## Files you will likely need to edit 
 items.csv — the items to annotate (images/text/audio/video).
 
 questions.json — annotation questions (supports help popups).
